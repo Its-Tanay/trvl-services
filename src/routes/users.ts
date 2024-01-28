@@ -39,7 +39,7 @@ router.post("/register", [
             maxAge: 60 * 60 * 24 * 1000 
         })
 
-        return res.sendStatus(200);
+        return res.status(200).send({ message: "User registered OK"});
 
     } catch(error) {
         console.log(error);
