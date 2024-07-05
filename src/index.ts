@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import userRoutes from './routes/users';
 import authRoutes from './routes/auth';
 import adminRoutes from './routes/admin';
+import adminAuthRoutes from './routes/adminAuth';
 import cookieParser from 'cookie-parser';
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
@@ -21,6 +22,7 @@ app.use(cors({
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 
 app.listen(3001, () => {
     console.log("Server running on port 3001");
