@@ -5,39 +5,24 @@ declare global {
     namespace Express {
         interface Request {
             userId?: string;
+            role?: string;
         }
     }
 }
 
 export const verifyAuthToken = (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies["auth_token"];
-    if(!token){
-        return res.status(401).json({message: "Unauthorized"})
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
-        req.userId = (decoded as JwtPayload).userId;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
+        req.userId = decoded.userId || decoded.adminId;
+        req.role = decoded.role;
         next();
+    } catch (error) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    catch(error){
-        return res.status(401).json({message: "Unauthorized"})
-    }
-}
-
-export const verifyAdminAuthToken = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies["admin_auth_token"];
-    if(!token){
-        return res.status(401).json({message: "Unauthorized"})
-    }
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
-        req.userId = (decoded as JwtPayload).adminId;
-        next();
-    }
-    catch(error){
-        return res.status(401).json({message: "Unauthorized"})
-    }
-}
+};
 
 export default verifyAuthToken;
-

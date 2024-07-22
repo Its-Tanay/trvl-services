@@ -3,7 +3,7 @@ import { check, validationResult } from "express-validator";
 import { Admin } from "../models/admin";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { verifyAdminAuthToken } from "../middleware/auth";
+import { verifyAuthToken } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -30,12 +30,12 @@ router.post("/login", [
         }
 
         const token = jwt.sign(
-            { adminId: admin.id },
+            { adminId: admin.id, role: "admin" },
             process.env.JWT_SECRET_KEY as string,
             { expiresIn: "1d" }
         );
 
-        res.cookie("admin_auth_token", token, {
+        res.cookie("auth_token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24 * 1000,
@@ -48,16 +48,15 @@ router.post("/login", [
     }
 });
 
-router.get("/validate-token", verifyAdminAuthToken, (req: Request, res: Response) => {
-    res.status(200).json({ adminId: req.userId});
+router.get("/validate-token", verifyAuthToken, (req: Request, res: Response) => {
+    res.status(200).json({ adminId: req.userId });
 });
 
 router.post("/logout", (req: Request, res: Response) => {
-    res.cookie("admin_auth_token", "", {
+    res.cookie("auth_token", "", {
         expires: new Date(0),
     });
     res.status(200).json({ message: "Logged out successfully" });
 });
-
 
 export default router;
