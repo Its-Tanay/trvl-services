@@ -19,7 +19,7 @@ app.use(cors({
     credentials: true
 }));
 
-app.use("/api/auth", authRoutes)
+app.use("/api/users/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
