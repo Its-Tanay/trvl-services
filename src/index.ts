@@ -3,7 +3,7 @@ import cors from 'cors';
 import "dotenv/config";
 import mongoose from 'mongoose';
 import userRoutes from './routes/users';
-import authRoutes from './routes/auth';
+import authRoutes from './routes/userAuth';
 import adminRoutes from './routes/admin';
 import adminAuthRoutes from './routes/adminAuth';
 import cookieParser from 'cookie-parser';
