@@ -1,14 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-
-export type AdminType = {
-    _id: string;
-    email: string;
-    username: string;
-    password: string;
-    businessName: string;
-    ownerName: string;
-};
+import { AdminType } from "../interfaces/types";
 
 const adminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
