@@ -3,7 +3,8 @@ import { check, validationResult } from "express-validator";
 import { User } from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { verifyAuthToken } from "../middleware/auth";
+import { verifyRole } from "../middleware/auth";
+import generateToken from "./utils/generateToken";
 
 const router = express.Router();
 
@@ -29,27 +30,23 @@ router.post("/login", [
             return res.status(400).json({ message: "Invalid Credentials" });
         }
 
-        const token = jwt.sign(
-            { userId: user.id, role: "user" },
-            process.env.JWT_SECRET_KEY as string,
-            { expiresIn: "1d" }
-        );
+        const accessToken = generateToken(user._id, "user");
 
-        res.cookie("auth_token", token, {
+        res.cookie("auth_token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24 * 1000,
         });
 
-        res.status(200).json({ userId: user._id });
+        res.status(200).json({ id: user._id, role: "user" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Something went wrong" });
     }
 });
 
-router.get("/validate-token", verifyAuthToken, (req: Request, res: Response) => {
-    res.status(200).json({ userId: req.userId });
+router.get("/validate-user", verifyRole("user"), (req: Request, res: Response) => {
+    res.status(200).json({ id: req.id, role : req.role });
 });
 
 router.post("/logout", (req: Request, res: Response) => {
