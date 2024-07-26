@@ -1,15 +1,15 @@
 import express, { Request, Response } from "express";
 import { check, validationResult } from "express-validator";
-import { Admin } from "../models/admin";
+import { User } from "../../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { verifyRole } from "../middleware/auth";
-import generateToken from "./utils/generateToken";
+import { verifyRole } from "../../middleware/auth";
+import generateToken from "../../utils/generateToken";
 
 const router = express.Router();
 
 router.post("/login", [
-    check("username", "Username is required").isString(),
+    check("email", "Email is required").isEmail(),
     check("password", "Password with 6 or more characters is required").isLength({ min: 6 })
 ], async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -17,20 +17,20 @@ router.post("/login", [
         return res.status(400).json({ message: errors.array() });
     }
 
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     try {
-        const admin = await Admin.findOne({ username });
-        if (!admin) {
+        const user = await User.findOne({ email });
+        if (!user) {
             return res.status(400).json({ message: "Invalid Credentials" });
         }
 
-        const isMatch = await bcrypt.compare(password, admin.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid Credentials" });
         }
 
-        const accessToken = generateToken(admin._id, "admin");
+        const accessToken = generateToken(user._id, "user");
 
         res.cookie("auth_token", accessToken, {
             httpOnly: true,
@@ -38,23 +38,22 @@ router.post("/login", [
             maxAge: 60 * 60 * 24 * 1000,
         });
 
-        res.status(200).json({ id: admin._id, role: "admin" });
+        res.status(200).json({ id: user._id, role: "user" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Something went wrong" });
     }
 });
 
-router.get("/validate-admin", verifyRole("admin"), async (req: Request, res: Response) => {
-    const admin = await Admin.findById(req.id);
-    res.status(200).json({ id: req.id, role : req.role, admin });
+router.get("/validate-user", verifyRole("user"), (req: Request, res: Response) => {
+    res.status(200).json({ id: req.id, role : req.role });
 });
 
 router.post("/logout", (req: Request, res: Response) => {
     res.cookie("auth_token", "", {
         expires: new Date(0),
     });
-    res.status(200).json({ message: "Logged out successfully" });
+    res.send();
 });
 
 export default router;
