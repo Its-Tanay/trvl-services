@@ -17,7 +17,7 @@ export interface AdminType {
   
 export interface HotelType {
     _id: string;
-    userId: string;
+    adminId: string;
     name: string;
     city: string;
     country: string;

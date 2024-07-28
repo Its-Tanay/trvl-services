@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { Admin } from "../models/admin";
+import { Admin } from "../../models/admin";
 import { check, validationResult } from "express-validator";
 
 const router = express.Router();

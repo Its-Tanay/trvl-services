@@ -6,6 +6,7 @@ import userRoutes from './routes/user/users';
 import authRoutes from './routes/user/user-auth';
 import adminRoutes from './routes/admin/admin';
 import adminAuthRoutes from './routes/admin/admin-auth';
+import hotelRoutes from "./routes/admin/my-hotels";
 import cookieParser from 'cookie-parser';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -30,6 +31,7 @@ app.use("/api/users/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
+app.use("/api/admin/hotels", hotelRoutes);
 
 app.listen(3001, () => {
     console.log("Server running on port 3001");
