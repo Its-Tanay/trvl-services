@@ -45,4 +45,3 @@ export interface BookingType {
     checkOut: Date;
     totalCost: number;
 };
-  
