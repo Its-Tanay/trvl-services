@@ -66,4 +66,61 @@ router.post("/add-hotel", verifyRole("admin"),
   }
 );
 
+router.get("/get-my-hotels", verifyRole("admin"), async (req: Request, res: Response) => {
+    try {
+        const hotels = await Hotel.find({ adminId: req.id });
+        res.json(hotels);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching hotels" });
+    }
+});
+
+router.get("/get-hotel-by-id/:id", verifyRole("admin"), async (req: Request, res: Response) => {
+    const id = req.params.id.toString();
+    try {
+        const hotel = await Hotel.findOne({
+        _id: id,
+        adminId: req.id,
+        });
+        res.json(hotel);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching hotels" });
+    }
+});
+
+router.put("/update-hotel-by-id/:hotelId", verifyRole("admin"), upload.array("imageFiles"), async (req: Request, res: Response) => {
+    try {
+        const updatedHotel: HotelType = req.body;
+        updatedHotel.lastUpdated = new Date();
+
+        const hotel = await Hotel.findOneAndUpdate(
+            {
+                _id: req.params.hotelId,
+                adminId: req.id,
+            },
+            updatedHotel,
+            { new: true }
+        );
+
+        if (!hotel) {
+            return res.status(404).json({ message: "Hotel not found" });
+        }
+
+        const files = req.files as Express.Multer.File[];
+        const updatedImageUrls = await uploadImages(files);
+
+        hotel.imageUrls = [
+            ...updatedImageUrls,
+            ...(updatedHotel.imageUrls || []),
+        ];
+
+        await hotel.save();
+        res.status(201).json(hotel);
+
+        } catch (error) {
+            res.status(500).json({ message: "Something went wrong" });
+        }
+    }
+);
+
 export default router;
