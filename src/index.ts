@@ -9,7 +9,7 @@ import adminAuthRoutes from './routes/admin/admin-auth';
 import hotelRoutes from "./routes/admin/my-hotels";
 import cookieParser from 'cookie-parser';
 import bookingRoutes from './routes/user/my-bookings';
-import myHotelRoutes from './routes/admin/my-hotels';
+import myHotelRoutes from './routes/user/hotels';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -17,6 +17,8 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
+
+console.log(cloudinary.config());
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 
@@ -35,7 +37,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin/hotels", hotelRoutes);
 app.use("/api/users/my-bookings", bookingRoutes);
-app.use("/api/admin/my-hotels", myHotelRoutes);
+app.use("/api/users/hotels", myHotelRoutes);
 
 app.listen(3001, () => {
     console.log("Server running on port 3001");

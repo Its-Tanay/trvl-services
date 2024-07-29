@@ -65,10 +65,7 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-router.get(
-    "/:id",
-    [param("id").notEmpty().withMessage("Hotel ID is required")],
-    async (req: Request, res: Response) => {
+router.get( "/:id", [param("id").notEmpty().withMessage("Hotel ID is required")], async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -86,10 +83,7 @@ router.get(
     }
 );
 
-router.post(
-    "/:hotelId/bookings/payment-intent",
-    verifyRole("user"),
-    async (req: Request, res: Response) => {
+router.post("/:hotelId/bookings/payment-intent", verifyRole("user"), async (req: Request, res: Response) => {
         const { numberOfNights } = req.body;
         const hotelId = req.params.hotelId;
 
@@ -102,7 +96,7 @@ router.post(
 
         const paymentIntent = await stripe.paymentIntents.create({
             amount: totalCost * 100,
-            currency: "gbp",
+            currency: "inr",
             metadata: {
                 hotelId,
                 userId: req.id as string,
@@ -123,10 +117,7 @@ router.post(
     }
 );
 
-router.post(
-    "/:hotelId/bookings",
-    verifyRole("user"),
-    async (req: Request, res: Response) => {
+router.post("/:hotelId/bookings", verifyRole("user"), async (req: Request, res: Response) => {
         try {
             const paymentIntentId = req.body.paymentIntentId;
 
@@ -147,7 +138,7 @@ router.post(
 
             if (paymentIntent.status !== "succeeded") {
                 return res.status(400).json({
-                message: `payment intent not succeeded. Status: ${paymentIntent.status}`,
+                    message: `payment intent not succeeded. Status: ${paymentIntent.status}`,
                 });
             }
 

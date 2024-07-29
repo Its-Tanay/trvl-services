@@ -42,7 +42,7 @@ router.post("/add-hotel", verifyRole("admin"),
         body("facilities")
             .notEmpty()
             .isArray()
-            .withMessage("Facilities are required"),
+            .withMessage("Facilities are required")
     ],
     upload.array("imageFiles", 6), async (req: Request, res: Response) => {
     try {
