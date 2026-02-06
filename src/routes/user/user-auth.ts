@@ -33,7 +33,7 @@ router.post("/login", [
 
         res.cookie("auth_token", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV !== "development",
             maxAge: 60 * 60 * 24 * 1000,
         });
 
@@ -45,7 +45,7 @@ router.post("/login", [
 });
 
 router.get("/validate-user", verifyRole("user"), (req: Request, res: Response) => {
-    res.status(200).json({ id: req.id, role : req.role });
+    res.status(200).json({ id: req.id, role: req.role });
 });
 
 router.post("/logout", (req: Request, res: Response) => {

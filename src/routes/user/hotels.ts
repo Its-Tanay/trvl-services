@@ -4,8 +4,11 @@ import { BookingType, HotelSearchResponse } from "../../interfaces/types";
 import { param, validationResult } from "express-validator";
 import Stripe from "stripe";
 import { verifyRole } from "../../middleware/auth";
+import { createMockPaymentIntent } from "../../utils/mockServices";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY as string);
+const stripe = process.env.MOCK_STRIPE !== 'true'
+    ? new Stripe(process.env.STRIPE_API_KEY as string)
+    : null;
 
 const router = express.Router();
 
@@ -94,7 +97,19 @@ router.post("/:hotelId/bookings/payment-intent", verifyRole("user"), async (req:
 
         const totalCost = hotel.pricePerNight * numberOfNights;
 
-        const paymentIntent = await stripe.paymentIntents.create({
+        const useMockStripe = process.env.MOCK_STRIPE === 'true';
+
+        if (useMockStripe) {
+            const mockIntent = await createMockPaymentIntent(totalCost * 100);
+            const response = {
+                paymentIntentId: mockIntent.id,
+                clientSecret: mockIntent.client_secret,
+                totalCost,
+            };
+            return res.send(response);
+        }
+
+        const paymentIntent = await stripe!.paymentIntents.create({
             amount: totalCost * 100,
             currency: "inr",
             metadata: {
@@ -120,26 +135,29 @@ router.post("/:hotelId/bookings/payment-intent", verifyRole("user"), async (req:
 router.post("/:hotelId/bookings", verifyRole("user"), async (req: Request, res: Response) => {
         try {
             const paymentIntentId = req.body.paymentIntentId;
+            const useMockStripe = process.env.MOCK_STRIPE === 'true';
 
-            const paymentIntent = await stripe.paymentIntents.retrieve(
-                paymentIntentId as string
-            );
+            if (!useMockStripe) {
+                const paymentIntent = await stripe!.paymentIntents.retrieve(
+                    paymentIntentId as string
+                );
 
-            if (!paymentIntent) {
-                return res.status(400).json({ message: "payment intent not found" });
-            }
+                if (!paymentIntent) {
+                    return res.status(400).json({ message: "payment intent not found" });
+                }
 
-            if (
-                paymentIntent.metadata.hotelId !== req.params.hotelId ||
-                paymentIntent.metadata.userId !== req.id
-            ) {
-                return res.status(400).json({ message: "payment intent mismatch" });
-            }
+                if (
+                    paymentIntent.metadata.hotelId !== req.params.hotelId ||
+                    paymentIntent.metadata.userId !== req.id
+                ) {
+                    return res.status(400).json({ message: "payment intent mismatch" });
+                }
 
-            if (paymentIntent.status !== "succeeded") {
-                return res.status(400).json({
-                    message: `payment intent not succeeded. Status: ${paymentIntent.status}`,
-                });
+                if (paymentIntent.status !== "succeeded") {
+                    return res.status(400).json({
+                        message: `payment intent not succeeded. Status: ${paymentIntent.status}`,
+                    });
+                }
             }
 
             const newBooking: BookingType = {
@@ -160,7 +178,7 @@ router.post("/:hotelId/bookings", verifyRole("user"), async (req: Request, res: 
 
             await hotel.save();
             res.status(200).send();
-        } 
+        }
 
         catch (error) {
             console.log(error);

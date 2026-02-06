@@ -1,4 +1,4 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import "dotenv/config";
 import mongoose from 'mongoose';
@@ -10,15 +10,20 @@ import hotelRoutes from "./routes/admin/my-hotels";
 import cookieParser from 'cookie-parser';
 import bookingRoutes from './routes/user/my-bookings';
 import myHotelRoutes from './routes/user/hotels';
+import healthRouter from './routes/health';
 import { v2 as cloudinary } from 'cloudinary';
+import { validateEnv } from './utils/validateEnv';
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-})
+validateEnv();
 
-console.log(cloudinary.config());
+if (process.env.MOCK_CLOUDINARY !== 'true') {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    console.log('Cloudinary configured:', cloudinary.config());
+}
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 
@@ -31,6 +36,7 @@ app.use(cors({
     credentials: true
 }));
 
+app.use("/health", healthRouter);
 app.use("/api/users/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/admin", adminRoutes);
@@ -39,6 +45,7 @@ app.use("/api/admin/hotels", hotelRoutes);
 app.use("/api/users/my-bookings", bookingRoutes);
 app.use("/api/users/hotels", myHotelRoutes);
 
-app.listen(3001, () => {
-    console.log("Server running on port 3001");
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

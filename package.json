@@ -6,7 +6,12 @@
   "scripts": {
     "dev": "nodemon",
     "build": "npm install && npx tsc",
-    "start": "node ./dist/index.js"
+    "seed": "ts-node src/scripts/seed.ts",
+    "seed:clean": "ts-node src/scripts/seed.ts --clean",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f app",
+    "docker:restart": "docker-compose restart app"
   },
   "author": "",
   "license": "ISC",
